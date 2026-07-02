@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blush:#f7e3e0;
+    --cream:#fbf3ea;
+    --plum:#4a2b3d;
+    --rose:#c96b7a;
+    --deep-rose:#a94f63;
+    --sage:#829672;
+    --sage-dark:#5c6e4d;
+    --gold:#cf9d4f;
+    --paper:#f2e4cf;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    height:100%;
+    overflow-x:hidden;
+    background: radial-gradient(circle at 50% 20%, #fdf1ec 0%, var(--blush) 45%, #f0d9d6 100%);
+    font-family:'Poppins', sans-serif;
+    color: var(--plum);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .stage{
+    position:relative;
+    min-height:100vh;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding: 6vh 0 4vh;
+    overflow:hidden;
+  }
+
+  /* ambient falling petals */
+  .petal{
+    position:absolute;
+    top:-5vh;
+    width:10px;
+    height:10px;
+    background: var(--rose);
+    opacity:0.55;
+    border-radius: 0 100% 0 100%;
+    animation: fall linear infinite;
+    pointer-events:none;
+  }
+  @keyframes fall{
+    0%{ transform: translateY(0) translateX(0) rotate(0deg); opacity:0; }
+    10%{ opacity:0.6; }
+    90%{ opacity:0.5; }
+    100%{ transform: translateY(115vh) translateX(var(--drift, 30px)) rotate(280deg); opacity:0; }
+  }
+
+  .eyebrow{
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--deep-rose);
+    opacity: 0;
+    animation: riseIn 1.2s ease forwards 0.3s;
+    margin-bottom: 6px;
+  }
+
+  h1.title{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(2.1rem, 9vw, 2.8rem);
+    margin: 0 0 2vh;
+    color: var(--plum);
+    opacity:0;
+    animation: riseIn 1.3s ease forwards 0.55s;
+    text-align:center;
+    padding: 0 8vw;
+  }
+
+  @keyframes riseIn{
+    from{ opacity:0; transform: translateY(14px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  /* ---------- BOUQUET ---------- */
+  .bouquet-wrap{
+    position:relative;
+    width: min(90vw, 380px);
+    opacity: 0;
+    animation: bloomInWrap 1.6s ease forwards 0.4s;
+  }
+  @keyframes bloomInWrap{
+    from{ opacity:0; transform: scale(0.85) translateY(20px); }
+    to{ opacity:1; transform: scale(1) translateY(0); }
+  }
+
+  .sway{
+    transform-origin: 50% 100%;
+    animation: sway 5.5s ease-in-out infinite;
+  }
+  @keyframes sway{
+    0%,100%{ transform: rotate(-1.4deg); }
+    50%{ transform: rotate(1.4deg); }
+  }
+
+  .sway-slow{
+    transform-origin: 50% 100%;
+    animation: sway 7s ease-in-out infinite;
+  }
+
+  .sway-fast{
+    transform-origin: 50% 100%;
+    animation: sway 4.2s ease-in-out infinite;
+  }
+
+  .petal-shape{
+    transform-origin: center;
+    animation: breathe 4.5s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{ transform: scale(1); }
+    50%{ transform: scale(1.035); }
+  }
+
+  .tap-hint{
+    margin-top: 3vh;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    color: var(--deep-rose);
+    opacity: 0.85;
+    text-align:center;
+    animation: pulseHint 2.4s ease-in-out infinite;
+  }
+  @keyframes pulseHint{
+    0%,100%{ opacity:0.5; }
+    50%{ opacity:0.95; }
+  }
+
+  /* ---------- NOTE OVERLAY ---------- */
+  .note-overlay{
+    position:fixed;
+    inset:0;
+    background: rgba(74,43,61,0.55);
+    backdrop-filter: blur(3px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 8vw;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.5s ease;
+    z-index: 20;
+  }
+  .note-overlay.open{
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  .note-card{
+    background: var(--paper);
+    background-image:
+      linear-gradient(rgba(74,43,61,0.04) 1px, transparent 1px);
+    background-size: 100% 2em;
+    width: min(88vw, 380px);
+    max-height: 78vh;
+    overflow-y:auto;
+    border-radius: 6px;
+    padding: 8vw 7vw 7vw;
+    position:relative;
+    box-shadow: 0 20px 50px rgba(74,43,61,0.4);
+    transform: scale(0.85) rotate(-1deg);
+    transition: transform 0.5s cubic-bezier(.2,.9,.3,1.3);
+  }
+  .note-overlay.open .note-card{
+    transform: scale(1) rotate(-0.5deg);
+  }
+
+  .note-card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height: 8px;
+    background: linear-gradient(90deg, var(--rose), var(--gold), var(--sage));
+    border-radius: 6px 6px 0 0;
+  }
+
+  .note-close{
+    position:absolute;
+    top: 12px;
+    right: 14px;
+    background:none;
+    border:none;
+    font-size: 1.4rem;
+    color: var(--deep-rose);
+    cursor:pointer;
+    line-height:1;
+    padding: 4px 8px;
+  }
+
+  .note-title{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight:600;
+    font-size: 1.6rem;
+    margin: 6px 0 14px;
+    color: var(--deep-rose);
+  }
+
+  .note-body{
+    font-family:'Cormorant Garamond', serif;
+    font-size: 1.18rem;
+    line-height: 1.75;
+    color: var(--plum);
+    white-space: pre-line;
+  }
+
+  .note-sign{
+    margin-top: 22px;
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.25rem;
+    text-align:right;
+    color: var(--deep-rose);
+  }
+
+  footer{
+    margin-top: 5vh;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--deep-rose);
+    opacity: 0.55;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .sway, .sway-slow, .sway-fast, .petal-shape, .petal, .tap-hint{
+      animation: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <div class="eyebrow">a small bouquet</div>
+  <h1 class="title">Maria, this one's<br>for you</h1>
+
+  <div class="bouquet-wrap" id="bouquetWrap">
+    <svg viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; display:block;">
+
+      <!-- WRAPPING PAPER -->
+      <g>
+        <path d="M120 430 L280 430 L330 510 L70 510 Z" fill="#f4e6d3"/>
+        <path d="M120 430 L280 430 L330 510 L70 510 Z" fill="url(#paperShade)" opacity="0.5"/>
+        <path d="M150 430 L250 430 L285 505 L115 505 Z" fill="none" stroke="#cf9d4f" stroke-width="2" opacity="0.5"/>
+        <!-- twine -->
+        <path d="M110 452 Q200 468 290 452" fill="none" stroke="#a9744a" stroke-width="4" stroke-linecap="round"/>
+        <path d="M110 452 Q200 440 290 452" fill="none" stroke="#c98d5e" stroke-width="2" stroke-linecap="round"/>
+      </g>
+
+      <defs>
+        <linearGradient id="paperShade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+          <stop offset="100%" stop-color="#c9a06a" stop-opacity="0.35"/>
+        </linearGradient>
+        <radialGradient id="roseCenter" cx="50%" cy="50%" r="60%">
+          <stop offset="0%" stop-color="#e79aa4"/>
+          <stop offset="100%" stop-color="#c96b7a"/>
+        </radialGradient>
+      </defs>
+
+      <!-- STEMS -->
+      <g class="sway-slow" style="animation-delay:-1s;">
+        <path d="M200 440 C195 380 175 320 165 260" stroke="#5c6e4d" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="sway" style="animation-delay:-2s;">
+        <path d="M200 440 C205 370 220 300 235 240" stroke="#5c6e4d" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="sway-fast" style="animation-delay:-0.5s;">
+        <path d="M200 440 C200 380 200 320 200 200" stroke="#5c6e4d" stroke-width="6" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="sway-slow" style="animation-delay:-3s;">
+        <path d="M200 440 C185 390 150 350 120 300" stroke="#5c6e4d" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="sway" style="animation-delay:-1.5s;">
+        <path d="M200 440 C215 390 250 350 280 300" stroke="#5c6e4d" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <!-- LEAVES -->
+      <g class="sway-slow" style="animation-delay:-2.4s;">
+        <path d="M175 340 C150 335 130 350 118 375 C150 378 172 365 175 340 Z" fill="#7c9670"/>
+        <path d="M225 320 C252 313 275 325 288 350 C255 355 230 342 225 320 Z" fill="#6f8560"/>
+      </g>
+
+      <!-- LEFT SMALL FLOWER (sage sprig / filler) -->
+      <g transform="translate(120,300)">
+        <g class="sway-slow petal-shape" style="animation-delay:-1s;">
+          <circle cx="0" cy="0" r="5" fill="#e8d5a8"/>
+          <circle cx="10" cy="6" r="5" fill="#e8d5a8"/>
+          <circle cx="-9" cy="7" r="5" fill="#e8d5a8"/>
+          <circle cx="3" cy="12" r="5" fill="#e0c791"/>
+        </g>
+      </g>
+
+      <!-- RIGHT SMALL FLOWER -->
+      <g transform="translate(280,300)">
+        <g class="sway petal-shape" style="animation-delay:-2s;">
+          <circle cx="0" cy="0" r="5" fill="#f0d9d6"/>
+          <circle cx="9" cy="5" r="5" fill="#f0d9d6"/>
+          <circle cx="-9" cy="6" r="5" fill="#f0d9d6"/>
+          <circle cx="0" cy="11" r="5" fill="#e8c9c6"/>
+        </g>
+      </g>
+
+      <!-- ROSE 1 (left, mid) -->
+      <g transform="translate(165,255)">
+        <g class="sway-slow petal-shape" style="animation-delay:-1.2s;">
+          <ellipse cx="0" cy="12" rx="24" ry="20" fill="#b95a6c"/>
+          <ellipse cx="0" cy="6" rx="19" ry="16" fill="#c96b7a"/>
+          <ellipse cx="0" cy="0" rx="13" ry="11" fill="url(#roseCenter)"/>
+          <path d="M-13 0 Q0 -12 13 0 Q0 4 -13 0 Z" fill="#e79aa4"/>
+        </g>
+      </g>
+
+      <!-- ROSE 2 (right, mid) -->
+      <g transform="translate(235,235)">
+        <g class="sway petal-shape" style="animation-delay:-2.6s;">
+          <ellipse cx="0" cy="12" rx="26" ry="22" fill="#a94f63"/>
+          <ellipse cx="0" cy="6" rx="20" ry="17" fill="#c05f72"/>
+          <ellipse cx="0" cy="0" rx="14" ry="12" fill="url(#roseCenter)"/>
+          <path d="M-14 0 Q0 -13 14 0 Q0 4 -14 0 Z" fill="#e79aa4"/>
+        </g>
+      </g>
+
+      <!-- CENTER PEONY (hero flower, largest) -->
+      <g transform="translate(200,190)">
+        <g class="sway-fast petal-shape" style="animation-delay:0s;">
+          <ellipse cx="0" cy="18" rx="34" ry="28" fill="#a24a5f"/>
+          <ellipse cx="-16" cy="4" rx="20" ry="17" fill="#c05f72" transform="rotate(-18)"/>
+          <ellipse cx="16" cy="4" rx="20" ry="17" fill="#c05f72" transform="rotate(18)"/>
+          <ellipse cx="0" cy="0" rx="20" ry="17" fill="#c96b7a" />
+          <ellipse cx="0" cy="-2" rx="19" ry="16" fill="#d17a89"/>
+          <ellipse cx="0" cy="2" rx="12" ry="10" fill="url(#roseCenter)"/>
+          <path d="M-12 2 Q0 -9 12 2 Q0 6 -12 2 Z" fill="#f0b6bd"/>
+          <circle cx="0" cy="2" r="4" fill="#e8d5a8"/>
+        </g>
+      </g>
+
+    </svg>
+  </div>
+
+  <div class="tap-hint" id="tapHint">tap the bouquet, love ♡</div>
+
+  <footer>made with love, just for you</footer>
+</div>
+
+<div class="note-overlay" id="noteOverlay">
+  <div class="note-card">
+    <button class="note-close" id="noteClose" aria-label="Close">×</button>
+    <div class="note-title">a little note</div>
+    <div class="note-body" id="noteBody">Maria — every flower here was picked for you, even if it's just pixels and a little bit of code.
+
+I wanted you to open your phone to something soft today. Something that felt like me thinking of you.
+
+You make ordinary days feel like they're worth writing about. This is just a small way of saying that.</div>
+    <div class="note-sign">— yours, always</div>
+  </div>
+</div>
+
+<script>
+  // gentle falling petals
+  const stage = document.getElementById('stage');
+  const petalCount = 14;
+  for (let i = 0; i < petalCount; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    const left = Math.random() * 100;
+    const delay = Math.random() * 10;
+    const duration = 9 + Math.random() * 7;
+    const drift = (Math.random() * 80 - 40) + 'px';
+    const size = 6 + Math.random() * 6;
+    const colors = ['#c96b7a', '#e79aa4', '#cf9d4f', '#829672'];
+    p.style.left = left + 'vw';
+    p.style.animationDelay = delay + 's';
+    p.style.animationDuration = duration + 's';
+    p.style.setProperty('--drift', drift);
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    stage.appendChild(p);
+  }
+
+  // tap to reveal note
+  const bouquetWrap = document.getElementById('bouquetWrap');
+  const overlay = document.getElementById('noteOverlay');
+  const closeBtn = document.getElementById('noteClose');
+  const tapHint = document.getElementById('tapHint');
+
+  function openNote(){
+    overlay.classList.add('open');
+  }
+  function closeNote(){
+    overlay.classList.remove('open');
+  }
+
+  bouquetWrap.addEventListener('click', openNote);
+  tapHint.addEventListener('click', openNote);
+  closeBtn.addEventListener('click', closeNote);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeNote();
+  });
+</script>
+
+</body>
+</html>
